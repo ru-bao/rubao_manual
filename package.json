@@ -9,7 +9,11 @@
   "author": "Xmader",
   "scripts": {
     "start": "http-server . -p 8082 -c-1",
-    "build": "parcel build index.js --public-url ./"
+    "build": "parcel build index.html --public-url ./"
+  },
+  "staticFiles": {
+    "staticPath": "static",
+    "watcherGlob": "**"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
@@ -19,7 +23,8 @@
     "babel-plugin-syntax-jsx": "^6.18.0",
     "babel-plugin-transform-vue-jsx": "^3.7.0",
     "http-server": "github:Xmader/http-server",
-    "parcel-bundler": "^1.10.3",
+    "parcel-bundler": "^1.12.5",
+    "parcel-plugin-static-files-copy": "^2.6.0",
     "vue": "^2.5.17",
     "vue-template-compiler": "^2.5.17"
   },

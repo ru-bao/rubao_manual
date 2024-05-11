@@ -13,7 +13,7 @@
 
 <template>
     <nav class="navbar navbar-dark bg-primary top-nav">
-        <img :src="'icon.jpg'" class="icon">
+        <img :src="icon" class="icon">
 
         <span class="navbar-brand">
 
@@ -29,8 +29,11 @@
 
 
 <script>
+import icon from '../icon.jpg';
+
 export default {
     data: () => ({
+        icon,
         search_open: false,
         search_keyword: ""
     }),

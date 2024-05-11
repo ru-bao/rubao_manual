@@ -1,0 +1,86 @@
+name: Build IOS Apps
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-ios:
+    runs-on: macOS-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build Vue.js project
+      run: npm run build
+
+    - name: Install Cordova
+      run: npm install -g cordova
+
+    - name: Create Cordova project
+      run: cordova create cordova com.phillweston.rubao Rubao
+
+    - name: Copy Vue.js build to Cordova project
+      run: cp -r dist/* cordova/www/
+
+    - name: Add iOS platform to Cordova project
+      run: |
+        cd cordova
+        cordova platform add ios
+
+    - name: Build iOS app
+      run: |
+        cd cordova
+        cordova build ios --release --device
+
+    - name: Prepare artifacts directory
+      run: |
+        mkdir -p artifacts/ios-app
+        cp cordova/platforms/ios/build/device/Rubao.ipa artifacts/ios-app/Rubao-${{ github.ref_name }}.ipa
+
+    - name: Upload IPA
+      uses: actions/upload-artifact@v2
+      with:
+        name: ios-app
+        path: artifacts/ios-app/Rubao-${{ github.ref_name }}.ipa
+
+  release:
+    needs: [build-ios]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        path: artifacts
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload iOS IPA to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/ios-app/Rubao-${{ github.ref_name }}.ipa
+        asset_name: Rubao-${{ github.ref_name }}.ipa
+        asset_content_type: application/octet-stream
